@@ -4,6 +4,32 @@ Source code of the CTF game developed for the [CTFCUP 2024](https://ctfcup.ru/) 
 
 ## Cheats
 
+### Utility scripts
+
+There are two utility scripts in the `scripts` directory:
+
+#### Launch game server locally
+
+```
+./scripts/server.sh
+```
+
+#### Launch client
+
+Command below will start the game client and connect either to the local server or to the remote server.
+
+```
+./scripts/client.sh <local|remote>
+```
+
+#### Environment variables
+
+You can pass environment variables to both client and server, e.g.:
+
+```
+REWIND_TPS=300 REWIND_FILE=rewind/level-1.json ./scripts/client.sh <local|remote>
+```
+
 ### Rewind
 
 Allows to save game's state and replay it later, basically checkpoint system.
