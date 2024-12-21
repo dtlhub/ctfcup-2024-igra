@@ -151,16 +151,13 @@ func (g *Game) Update() error {
 		return fmt.Errorf("calculating checksum: %w", err)
 	}
 
-	if err := g.Engine.Update(g.inp); err != nil {
-		return fmt.Errorf("updating engine state: %w", err)
-	}
-
 	g.recording.Record(g.inp.ToProto())
 
 	if g.inp.IsKeyNewlyPressed(ebiten.KeyX) {
 		g.recording.SaveAndReport()
 	}
-	if g.inp.IsKeyNewlyPressed(ebiten.KeyR) {
+	if g.inp.IsKeyNewlyPressed(ebiten.KeyR) && g.inp.IsKeyPressed(ebiten.KeyShift) {
+		logrus.Info("Recording reset")
 		g.recording.Clear()
 	}
 
@@ -204,6 +201,10 @@ func (g *Game) Update() error {
 				return g.ctx.Err()
 			}
 		}
+	}
+
+	if err := g.Engine.Update(g.inp); err != nil {
+		return fmt.Errorf("updating engine state: %w", err)
 	}
 
 	return nil

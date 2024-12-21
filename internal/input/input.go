@@ -59,6 +59,7 @@ var interestingKeys = []ebiten.Key{
 	//
 	ebiten.KeyMinus,
 	ebiten.KeyEqual,
+	ebiten.KeyShift,
 }
 
 type Input struct {

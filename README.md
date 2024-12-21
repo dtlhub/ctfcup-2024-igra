@@ -19,24 +19,20 @@ Allows to save game's state and replay it later, basically checkpoint system.
 #### Hotkeys:
 
 - `X` - save rewind up to the current moment to file.
+- `Shift+R` — reset recording. Note that this will also restart the game, as `R` is handled as usual.
 
 ### TPS (ticks per second)
 
 - `+` - increase TPS.
 - `-` - decrease TPS.
 
-For both of these keys, the shift does not matter.
+For both of these keys, whether the shift is pressed or not does not matter.
 
 ### Better movement
 
 - Left / Right arrow keys — move player left / right and pause the game, once released.
 - Up arrow key — jump and pause the game, once released.
 - `Z` / down key — unpause the game while the key is held down and pause it once released.
-
-Note that the pause resets your momentum. It has following consequences:
-
-- Jump is reset.
-- Falling speed is reset.
 
 ### Free camera (noclip)
 

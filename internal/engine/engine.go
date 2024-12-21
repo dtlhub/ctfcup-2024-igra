@@ -27,7 +27,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/lafriks/go-tiled"
 	"github.com/samber/lo"
-	"github.com/sirupsen/logrus"
 	"github.com/vmihailenco/msgpack/v5"
 
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/arcade"
@@ -855,12 +854,8 @@ func (e *Engine) Draw(screen *ebiten.Image, opts ...DrawOptionsFunc) {
 
 func (e *Engine) Update(inp *input.Input) error {
 	e.Tick++
-	logrus.Info("Tick", e.Tick)
-
 	e.PreprocessKeys(inp)
-	logrus.Info("Preprocessed keys")
 	e.HandleCustomKeys(inp)
-	logrus.Info("Handled custom keys")
 
 	if e.resourceBundle.MusicBundle != nil {
 		p := e.resourceBundle.GetMusicPlayer(resources.MusicBackground)
