@@ -104,6 +104,7 @@ type Engine struct {
 	FrameMovement FrameMovementState `json:"-" msgpack:"-"`
 	TempPause     cheats.TempPause   `json:"-" msgpack:"-"`
 	JumpTempPause cheats.TempPause   `json:"-" msgpack:"-"`
+	ClipboardFeed ClipboardFeed      `json:"-" msgpack:"-"`
 
 	FreeCam *FreeCam `json:"-" msgpack:"-"`
 
@@ -854,8 +855,6 @@ func (e *Engine) Draw(screen *ebiten.Image, opts ...DrawOptionsFunc) {
 
 func (e *Engine) Update(inp *input.Input) error {
 	e.Tick++
-	e.PreprocessKeys(inp)
-	e.HandleCustomKeys(inp)
 
 	if e.resourceBundle.MusicBundle != nil {
 		p := e.resourceBundle.GetMusicPlayer(resources.MusicBackground)
@@ -887,6 +886,10 @@ func (e *Engine) Update(inp *input.Input) error {
 		}
 
 		pk := inp.JustPressedKeys()
+		pk = lo.Filter(pk, func(k ebiten.Key, _ int) bool {
+			return !slices.Contains(input.CustomKeys, k)
+		})
+
 		if len(pk) > 0 && !e.activeNPC.Dialog.State().Finished {
 			c := pk[0]
 			switch c {
@@ -1295,4 +1298,8 @@ func (e *Engine) ActiveCamera() *object.Base {
 
 func (e *Engine) IsStill() bool {
 	return e.Player.Speed.X == 0 && e.Player.OnGround() == nil && e.Paused
+}
+
+func (e *Engine) FreeRoamMode() bool {
+	return e.activeNPC == nil && e.activeArcade == nil
 }

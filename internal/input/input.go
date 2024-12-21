@@ -7,6 +7,13 @@ import (
 	gameserverpb "github.com/c4t-but-s4d/ctfcup-2024-igra/proto/go/gameserver"
 )
 
+var CustomKeys = []ebiten.Key{
+	ebiten.KeyMinus,
+	ebiten.KeyEqual,
+	ebiten.KeyShift,
+	ebiten.KeyControl,
+}
+
 var interestingKeys = []ebiten.Key{
 	ebiten.KeyA,
 	ebiten.KeyB,
@@ -56,10 +63,10 @@ var interestingKeys = []ebiten.Key{
 	ebiten.KeyArrowDown,
 	ebiten.KeyArrowLeft,
 	ebiten.KeyArrowRight,
-	//
-	ebiten.KeyMinus,
-	ebiten.KeyEqual,
-	ebiten.KeyShift,
+}
+
+func init() {
+	interestingKeys = append(interestingKeys, CustomKeys...)
 }
 
 type Input struct {

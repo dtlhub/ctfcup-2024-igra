@@ -36,11 +36,13 @@ For both of these keys, whether the shift is pressed or not does not matter.
 
 ### Free camera (noclip)
 
-### Hotkeys
-
 - `N` — to toggle free camera on/off.
 - `I` / `J` / `K` / `L` — move free camera up /left / down / right.
 - `U` / `O` — slow down / speed up free camera.
+
+### NPC Dialod
+
+- `Ctrl+V` — paste text from clipboard into the dialog.
 
 ### Destructive cheats
 

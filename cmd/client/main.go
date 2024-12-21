@@ -161,6 +161,8 @@ func (g *Game) Update() error {
 		g.recording.Clear()
 	}
 
+	g.Engine.PreprocessKeys(g.inp)
+
 	if g.stream != nil {
 		if err := g.stream.Send(&gameserverpb.ClientEventRequest{
 			Checksum: checksum,
