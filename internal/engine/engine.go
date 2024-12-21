@@ -21,11 +21,13 @@ import (
 	"time"
 
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/boss"
+	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/cheats"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/lafriks/go-tiled"
 	"github.com/samber/lo"
+	"github.com/sirupsen/logrus"
 	"github.com/vmihailenco/msgpack/v5"
 
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/arcade"
@@ -45,6 +47,14 @@ import (
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/resources"
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/tiles"
 	gameserverpb "github.com/c4t-but-s4d/ctfcup-2024-igra/proto/go/gameserver"
+)
+
+type FrameMovementState int
+
+const (
+	FrameMovementStateNone FrameMovementState = iota
+	FrameMovementStateStarted
+	FrameMovementStateAwaitingPause
 )
 
 const dialogShowLines = 12
@@ -91,6 +101,12 @@ type Engine struct {
 	dialogControl       dialogControl
 	notificationText    string
 	notificationEndTick int
+
+	FrameMovement FrameMovementState `json:"-" msgpack:"-"`
+	TempPause     cheats.TempPause   `json:"-" msgpack:"-"`
+	JumpTempPause cheats.TempPause   `json:"-" msgpack:"-"`
+
+	FreeCam *FreeCam `json:"-" msgpack:"-"`
 
 	Muted    bool   `json:"-" msgpack:"-"`
 	Paused   bool   `json:"-" msgpack:"paused"`
@@ -397,6 +413,7 @@ func New(config Config, resourceBundle *resources.Bundle, dialogProvider dialog.
 		snapshotsDir:     config.SnapshotsDir,
 		playerSpawn:      playerPos,
 		Level:            config.Level,
+		FreeCam:          NewFreeCam(),
 		TeamName:         strings.Split(os.Getenv("AUTH_TOKEN"), ":")[0],
 		dialogControl: dialogControl{
 			maskInput: !dialogProvider.DisplayInput(),
@@ -664,7 +681,12 @@ func (e *Engine) drawNPCDialog(screen *ebiten.Image) {
 	}
 }
 
-func (e *Engine) Draw(screen *ebiten.Image) {
+func (e *Engine) Draw(screen *ebiten.Image, opts ...DrawOptionsFunc) {
+	drawOpts := &DrawOptions{}
+	for _, opt := range opts {
+		opt(drawOpts)
+	}
+
 	if e.Player.IsDead() {
 		e.drawDiedScreen(screen)
 		return
@@ -676,8 +698,8 @@ func (e *Engine) Draw(screen *ebiten.Image) {
 	}
 
 	if e.activeArcade == nil {
-		for _, c := range e.Collisions(e.Camera.Rectangle()) {
-			visible := c.Rectangle().Sub(e.Camera.Rectangle())
+		for _, c := range e.Collisions(e.ActiveCamera().Rectangle()) {
+			visible := c.Rectangle().Sub(e.ActiveCamera().Rectangle())
 			base := geometry.Origin.Add(visible)
 			op := &ebiten.DrawImageOptions{}
 
@@ -749,30 +771,67 @@ func (e *Engine) Draw(screen *ebiten.Image) {
 		step := float64(camera.WIDTH / 32)
 		index := float64(0)
 
-		teamtxt := fmt.Sprintf("Team %s", e.TeamName)
-		textOp := &text.DrawOptions{}
-		textOp.GeoM.Translate(start, start+step*index)
-		textOp.ColorScale.ScaleWithColor(color.RGBA{R: 204, G: 14, B: 206, A: 255})
-		text.Draw(screen, teamtxt, face, textOp)
-		index++
+		type Line struct {
+			Text  string
+			Color color.RGBA
+		}
 
+		lines := []Line{{
+			Text:  fmt.Sprintf("Team %s", e.TeamName),
+			Color: color.RGBA{R: 204, G: 14, B: 206, A: 255},
+		}}
 		if e.activeArcade == nil {
-			txt := fmt.Sprintf("HP: %d", e.Player.Health)
-			textOp = &text.DrawOptions{}
+			lines = append(lines, Line{
+				Text:  fmt.Sprintf("HP: %d", e.Player.Health),
+				Color: color.RGBA{R: 0, G: 255, B: 0, A: 255},
+			})
+		}
+		lines = append(lines, Line{
+			Text:  fmt.Sprintf("Coins: %d", e.Player.Coins),
+			Color: color.RGBA{R: 255, G: 215, B: 0, A: 255},
+		})
+
+		lines = append(lines, Line{
+			Text:  fmt.Sprintf("Coord of left corner: %0.2f %0.2f", e.Player.Rectangle().LeftX, e.Player.Rectangle().BottomY),
+			Color: color.RGBA{R: 0, G: 255, B: 0, A: 255},
+		})
+		lines = append(lines, Line{
+			Text:  fmt.Sprintf("Speed: %0.2f %0.2f", e.Player.Speed.X, e.Player.Speed.Y),
+			Color: color.RGBA{R: 0, G: 255, B: 0, A: 255},
+		})
+		lines = append(lines, Line{
+			Text:  fmt.Sprintf("TPS: %d", ebiten.TPS()),
+			Color: color.RGBA{R: 255, G: 255, B: 0, A: 255},
+		})
+
+		if drawOpts.Rewind != nil {
+			txt := fmt.Sprintf("Rewinding: %d/%d", drawOpts.Rewind.CurrentFrame, drawOpts.Rewind.TotalFrames)
+			lines = append(lines, Line{Text: txt, Color: color.RGBA{R: 255, G: 255, B: 0, A: 255}})
+		}
+
+		if e.FreeCam.Enabled {
+			lines = append(lines, Line{
+				Text: fmt.Sprintf(
+					"FreeCam position: %0.2f %0.2f / speed: %0.2f",
+					e.FreeCam.Origin.X, e.FreeCam.Origin.Y, e.FreeCam.Speed,
+				),
+				Color: color.RGBA{R: 255, G: 0, B: 100, A: 255},
+			})
+		}
+		if e.Paused {
+			lines = append(lines, Line{Text: "Paused", Color: color.RGBA{R: 255, G: 100, B: 0, A: 255}})
+		}
+
+		for _, line := range lines {
+			textOp := &text.DrawOptions{}
 			textOp.GeoM.Translate(start, start+step*index)
-			textOp.ColorScale.ScaleWithColor(color.RGBA{R: 0, G: 255, B: 0, A: 255})
-			text.Draw(screen, txt, face, textOp)
+			textOp.ColorScale.ScaleWithColor(line.Color)
+			text.Draw(screen, line.Text, face, textOp)
 			index++
 		}
 
-		coinsTxt := fmt.Sprintf("Coins: %d", e.Player.Coins)
-		textOp = &text.DrawOptions{}
-		textOp.GeoM.Translate(start, start+step*index)
-		textOp.ColorScale.ScaleWithColor(color.RGBA{R: 255, G: 215, B: 0, A: 255})
-		text.Draw(screen, coinsTxt, face, textOp)
-
 		for i, it := range e.Player.Inventory.Items {
-			itemX := e.Camera.Width - float64(i+1)*72
+			itemX := e.ActiveCamera().Width - float64(i+1)*72
 			itemY := camera.HEIGHT / 20
 			vector.StrokeRect(screen, float32(itemX-4), float32(itemY-4), 40, 40, 2, color.RGBA{R: 230, G: 230, B: 230, A: 255}, false)
 			vector.DrawFilledRect(screen, float32(itemX-4), float32(itemY-4), 40, 40, color.RGBA{R: 156, G: 150, B: 138, A: 196}, false)
@@ -796,6 +855,12 @@ func (e *Engine) Draw(screen *ebiten.Image) {
 
 func (e *Engine) Update(inp *input.Input) error {
 	e.Tick++
+	logrus.Info("Tick", e.Tick)
+
+	e.PreprocessKeys(inp)
+	logrus.Info("Preprocessed keys")
+	e.HandleCustomKeys(inp)
+	logrus.Info("Handled custom keys")
 
 	if e.resourceBundle.MusicBundle != nil {
 		p := e.resourceBundle.GetMusicPlayer(resources.MusicBackground)
@@ -1224,4 +1289,15 @@ func (e *Engine) ActiveNPC() *npc.NPC {
 
 func (e *Engine) ActiveArcade() *arcade.Machine {
 	return e.activeArcade
+}
+
+func (e *Engine) ActiveCamera() *object.Base {
+	if e.FreeCam.Enabled {
+		return e.FreeCam.Base
+	}
+	return e.Camera.Base
+}
+
+func (e *Engine) IsStill() bool {
+	return e.Player.Speed.X == 0 && e.Player.OnGround() == nil && e.Paused
 }

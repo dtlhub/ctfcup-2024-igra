@@ -56,6 +56,9 @@ var interestingKeys = []ebiten.Key{
 	ebiten.KeyArrowDown,
 	ebiten.KeyArrowLeft,
 	ebiten.KeyArrowRight,
+	//
+	ebiten.KeyMinus,
+	ebiten.KeyEqual,
 }
 
 type Input struct {
@@ -79,6 +82,18 @@ func NewFromProto(p *gameserverpb.ClientEvent_KeysPressed) *Input {
 		i.newlyPressedKeys[ebiten.Key(key)] = struct{}{}
 	}
 	return i
+}
+
+func (i *Input) UpdateFromRewind(move *gameserverpb.ClientEvent_KeysPressed) {
+	i.pressedKeys = make(map[ebiten.Key]struct{}, len(move.KeysPressed))
+	for _, key := range move.KeysPressed {
+		i.pressedKeys[ebiten.Key(key)] = struct{}{}
+	}
+
+	i.newlyPressedKeys = make(map[ebiten.Key]struct{}, len(move.NewKeysPressed))
+	for _, key := range move.NewKeysPressed {
+		i.newlyPressedKeys[ebiten.Key(key)] = struct{}{}
+	}
 }
 
 func (i *Input) Update() {
@@ -123,4 +138,20 @@ func (i *Input) ToProto() *gameserverpb.ClientEvent_KeysPressed {
 			return int32(key)
 		}),
 	}
+}
+
+func (i *Input) AddKeyPressed(key ebiten.Key) {
+	i.pressedKeys[key] = struct{}{}
+}
+
+func (i *Input) RemoveKeyPressed(key ebiten.Key) {
+	delete(i.pressedKeys, key)
+}
+
+func (i *Input) AddKeyNewlyPressed(key ebiten.Key) {
+	i.newlyPressedKeys[key] = struct{}{}
+}
+
+func (i *Input) RemoveKeyNewlyPressed(key ebiten.Key) {
+	delete(i.newlyPressedKeys, key)
 }

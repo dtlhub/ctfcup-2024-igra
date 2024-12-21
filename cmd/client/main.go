@@ -20,6 +20,9 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/camera"
+	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/cheats"
+	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/cheats/rewind"
+	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/cheats/tps"
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/dialog"
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/engine"
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/grpcauth"
@@ -96,6 +99,8 @@ func NewGame(ctx context.Context, client gameserverpb.GameServerServiceClient, l
 		g.Engine = e
 	}
 
+	g.replayer.Initialize(g.Engine)
+
 	return g, nil
 }
 
@@ -103,6 +108,10 @@ type Game struct {
 	Engine *engine.Engine
 	stream gameserverpb.GameServerService_ProcessEventClient
 	ctx    context.Context
+
+	replayer  rewind.Rewinder
+	recording rewind.Rewind
+	ticks     int
 
 	inp *input.Input
 
@@ -115,7 +124,21 @@ func (g *Game) Update() error {
 		return err
 	}
 
-	g.inp.Update()
+	moves, justFinished, done := g.replayer.NextFrame()
+	if done {
+		if justFinished {
+			tps.SetFromEnv("INITIAL_TPS", 60)
+		}
+
+		g.inp.Update()
+		g.ticks++
+
+		if justFinished && !g.Engine.Paused && g.replayer.CurrentFrame() > 0 {
+			g.inp.AddKeyNewlyPressed(ebiten.KeyP)
+		}
+	} else {
+		g.inp.UpdateFromRewind(moves)
+	}
 
 	select {
 	case err := <-g.recvErrChan:
@@ -126,6 +149,19 @@ func (g *Game) Update() error {
 	checksum, err := g.Engine.Checksum()
 	if err != nil {
 		return fmt.Errorf("calculating checksum: %w", err)
+	}
+
+	if err := g.Engine.Update(g.inp); err != nil {
+		return fmt.Errorf("updating engine state: %w", err)
+	}
+
+	g.recording.Record(g.inp.ToProto())
+
+	if g.inp.IsKeyNewlyPressed(ebiten.KeyX) {
+		g.recording.SaveAndReport()
+	}
+	if g.inp.IsKeyNewlyPressed(ebiten.KeyR) {
+		g.recording.Clear()
 	}
 
 	if g.stream != nil {
@@ -168,10 +204,6 @@ func (g *Game) Update() error {
 				return g.ctx.Err()
 			}
 		}
-	}
-
-	if err := g.Engine.Update(g.inp); err != nil {
-		return fmt.Errorf("updating engine state: %w", err)
 	}
 
 	return nil
@@ -228,6 +260,9 @@ func main() {
 	ebiten.SetWindowTitle("ctfcup-2024-igra client")
 	ebiten.SetWindowSize(camera.WIDTH, camera.HEIGHT)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
+
+	cheats.SetMonitor()
+	g.Engine.Muted = cheats.Muted
 
 	if err := ebiten.RunGame(g); err != nil && !errors.Is(err, context.Canceled) {
 		logrus.Fatalf("Failed to run game: %v", err)
