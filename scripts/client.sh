@@ -13,7 +13,7 @@ ADDRESS="localhost:8085"
 AUTH_TOKEN="dtl:12345"
 if [ "$1" == "remote" ]; then
     ADDRESS="172.16.30.195:13372"
-    AUTH_TOKEN="dtl:509bd7cc468edebcc2090088ea01b43116b4f3f68b993e4ec68652653c0281d7"
+    AUTH_TOKEN="dtl:794412228410f7209a7700b9eeb9f3203fb1c9e4bd87f3eba2a244489aa32395"
 fi
 
 AUTH_TOKEN="$AUTH_TOKEN" go run cmd/client/main.go -s "$ADDRESS" -l "$LEVEL"
