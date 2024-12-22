@@ -22,5 +22,8 @@ func GetSolver() Solver {
 	if SnakeSolverActive {
 		return NewSnakeSolver()
 	}
+	if BrodilkaSolverActive {
+		return NewBrodilkaSolver()
+	}
 	return nil
 }

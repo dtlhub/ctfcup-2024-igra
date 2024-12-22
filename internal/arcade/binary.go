@@ -12,6 +12,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/samber/lo"
+	"github.com/sirupsen/logrus"
 )
 
 var binaryKeyMapping = map[ebiten.Key]byte{
@@ -137,13 +138,18 @@ func (g *binaryGame) Feed(keys []ebiten.Key) error {
 	}
 
 	// Don't update screen if game has already won or lost.
+
+	logrus.Infof("buf: %v", g.buf[:4])
 	if bytes.Contains(g.buf, winMarker) {
+		logrus.Infof("state: won")
 		g.state.Result = ResultWon
 		return g.Stop()
 	} else if bytes.Contains(g.buf, loseMarker) {
+		logrus.Infof("state: lost")
 		g.state.Result = ResultLost
 		return g.Stop()
 	}
+	logrus.Infof("state: unknown")
 
 	for i, c := range g.buf {
 		g.state.Screen[i/ScreenSize][i%ScreenSize] = colors[c]
