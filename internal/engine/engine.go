@@ -977,10 +977,10 @@ func (e *Engine) Update(inp *input.Input) error {
 			return nil
 		}
 
-		pressedKeys := inp.PressedKeys()
 		if os.Getenv("MAZE_SOLVER") == "1" {
-			pressedKeys = []ebiten.Key{e.MazeSolver.NextMove()}
+			inp.AddKeyPressed(e.MazeSolver.NextMove())
 		}
+		pressedKeys := inp.PressedKeys()
 
 		if err := e.activeArcade.Game.Feed(pressedKeys); err != nil {
 			return fmt.Errorf("feeding arcade game: %w", err)
