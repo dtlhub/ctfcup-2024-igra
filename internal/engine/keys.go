@@ -17,9 +17,9 @@ var (
 	}
 
 	keymap = map[ebiten.Key]ebiten.Key{
-		ebiten.KeyUp:    ebiten.KeyW,
-		ebiten.KeyLeft:  ebiten.KeyA,
-		ebiten.KeyRight: ebiten.KeyD,
+		// ebiten.KeyUp:    ebiten.KeyW,
+		// ebiten.KeyLeft:  ebiten.KeyA,
+		// ebiten.KeyRight: ebiten.KeyD,
 	}
 )
 

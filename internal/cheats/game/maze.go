@@ -6,7 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const MaxMoves = 100
+const MaxMoves = 5
 
 var (
 	moves = []ebiten.Key{
