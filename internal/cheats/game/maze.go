@@ -2,86 +2,176 @@ package game
 
 import (
 	"os"
+	"strings"
 
-	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/arcade"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/sirupsen/logrus"
 )
 
 var MazeSolverActive = false
-
-const size = 200
 
 func init() {
 	value, ok := os.LookupEnv("MAZE_SOLVER")
 	MazeSolverActive = ok && value != "0"
 }
 
-type cell int
+const mazeStr = `################################################################
+##       #           #       #   #       #               #     #
+## ####### ######### # ### # # # # # ##### ### ######### ### # #
+## #       #         # #   # # #   #     #   # #   #   #   # # #
+## # ####### ########### ### # ######### ### # # # ### ### ### #
+## #   #   #   #         #   # #   #   #     #   #   #       # #
+## ### # # ### # ### ##### ### # # # # ############# ####### # #
+##     # #     # #   #       # # #   #           # #     # #   #
+## ##### ####### # ########### # ##### ######### # ##### # ### #
+##   # #   #     #               #     #S#   # #   #     # #   #
+#### # ### ####### ##### ############# # # # # ### # ##### # ###
+## # #   #       # #   # #       #   # #   # #   # # #     #   #
+## # ### ####### # # # ### ##### # # ####### # # # # # # ##### #
+## #   # #       # # #   # #   #   #       # # # # # # #   #   #
+## ### # # # ####### ### # # ############# # # # # # ### # # ###
+##   #   # # #     #   #   #           #   # # #   #   # # #   #
+#### ### # ### ### ### ##### ######### # ### # ####### # # ### #
+##     # #     # #   # # #   #   #     # #   # #   #   # # #   #
+## ##### ####### ### # # # ##### # ### # # ### # # # ### # # ###
+## #     # #       #   # #     # # #   # # #   # # # # # #   # #
+## # ##### # ##### ##### ##### # # ##### # # ### ### # # ##### #
+## # #       #   #       #       #     #   #     #   # #   #   #
+## # # ######### ##### ### ########### ######### # ### ### # # #
+## # # #   #   #   # #         #     #   #   #   # #     # # # #
+## # # # # # # # # # ########### ### # # # # ##### ### ### # ###
+##   #   #   #   #       #       # #   # # #   #   #   #   #   #
+## ################# ##### ####### ##### # ### # ### ### ##### #
+## #             #   #     #   #     #   # # #   #       #     #
+## # ##### ### ### ### ####### # ### # ### # ##### ####### # ###
+## # #   #   #       #   #     # #   # #   #     #   #   # #   #
+## ### # ### ########### # ### # # ### # ### ### ### # ### ### #
+## #   #   #   #         # #   # #   # #   #   #     #     #   #
+## # ##### ##### ######### ##### ### # # # ######### ### ### # #
+##   #   #     #       #   #   # #   # # # #       #   # #   # #
+###### ####### ##### # ### # # # # # # ### # ##### ### ### ### #
+##           # #   # #   #   #   # # #   # # # #   #       #   #
+## ####### ### # # ##### # ####### # ### # # # # ####### #######
+##       # #   # #     # # #       # # # #   # #       # #     #
+######## # # ### ##### # # # ####### # # # ### ####### ### ### #
+## #     #   #       #   # # #     #   # #           #     #   #
+## # ############### ##### # # ### ### # ####### ##### ##### ###
+## #   #             #   # #     #   # #     #   #   # #   #   #
+## ### # ##### # ##### # ######### # # ##### ##### # # # # ### #
+##     #     # # #     #   #     #E# # #   # #     # # # # #   #
+## ######### # ### ####### # ### ### ### # # # ##### ### # # ###
+## #     # # # #   #       #   #   #     # # #   # #   # # #   #
+## # ### # # # # ### ### ##### ### ### ### # ### # ### # # # # #
+##   #   #   #     # #   #       #   # #   #   # #   #   # # # #
+###### ##### ####### # ### ######### ### # ### # # # ##### ### #
+##   # #   # #       # #   #   #     #   #   # # # #     # #   #
+## ### # # ### # ####### ### # # ##### ##### # # # # ##### # # #
+##   # # #     # #       #   #   # #     #   #   # #       # # #
+## # # # ######### ####### ####### # ### ######### ######### # #
+## # # # #   #   # # #   # #       #   #         # #         # #
+## # # # # # # # # # # # # # ### # ### ######### # # ##### ### #
+## #   #   #   # #   # #   #   # # # # #       # # # #   # #   #
+## ######### ### ### # ######### # # # ##### # # # # # # # # ###
+##   #     #   # #   #   #       #   #     # # #   #   # # # # #
+#### # ### ##### # ##### # ### ########### ### ########### # # #
+## #   # #     #   #     #   # #       #   #     #     #   # # #
+## ##### ##### ##### ##### # ### ##### # ### ### ### # # ### # #
+##                   #     #         #       #       #   #     #
+################################################################`
 
-const (
-	unknown cell = iota
-	empty   cell = iota
-	wall
-	finish
-)
+var path []ebiten.Key
 
-var (
-	moves = []ebiten.Key{
-		ebiten.KeyArrowUp,
-		ebiten.KeyArrowDown,
-		ebiten.KeyArrowLeft,
-		ebiten.KeyArrowRight,
-	}
-	opposite = map[ebiten.Key]ebiten.Key{
-		ebiten.KeyArrowUp:    ebiten.KeyArrowDown,
-		ebiten.KeyArrowDown:  ebiten.KeyArrowUp,
-		ebiten.KeyArrowLeft:  ebiten.KeyArrowRight,
-		ebiten.KeyArrowRight: ebiten.KeyArrowLeft,
-	}
-)
+func init() {
+	lines := strings.Split(mazeStr, "\n")
+	height := len(lines)
+	width := len(lines[0])
+	grid := make([][]rune, height)
+	var start, end struct{ x, y int }
 
-type point struct {
-	x, y int
-}
-
-type MazeSolver struct {
-	move           int
-	prohibitedMove *ebiten.Key
-	lastState      *arcade.State
-	playerLocation point
-	movedToCell    point
-	maze           [size][size]int
-}
-
-func (s *MazeSolver) NextMove() ebiten.Key {
-	s.move = (s.move + 1) % len(moves)
-	if s.prohibitedMove != nil && moves[s.move] == *s.prohibitedMove {
-		s.move = (s.move + 1) % len(moves)
-	}
-	return moves[s.move]
-}
-
-func (s *MazeSolver) Reset() {
-	s.move = 0
-	s.prohibitedMove = nil
-	s.lastState = nil
-}
-
-func (s *MazeSolver) FeedState(state *arcade.State) {
-	x, y := GetPlayerLocation(state)
-	if s.playerLocation.x != x || s.playerLocation.y != y {
-		s.playerLocation = point{x, y}
-	}
-}
-
-func GetPlayerLocation(s *arcade.State) (int, int) {
-	for i := 0; i < len(s.Screen); i++ {
-		for j := 0; j < len(s.Screen[i]); j++ {
-			r, g, b, a := s.Screen[i][j].RGBA()
-			if r == 65535 && g == 0 && b == 0 && a == 65535 {
-				return i, j
+	for y := 0; y < height; y++ {
+		grid[y] = make([]rune, width)
+		for x := 0; x < width; x++ {
+			grid[y][x] = rune(lines[y][x])
+			if grid[y][x] == 'E' {
+				end.x, end.y = x, y
+			}
+			if y == 1 && grid[y][x] == ' ' && start.x == 0 {
+				start.x, start.y = x, y
 			}
 		}
 	}
-	return -1, -1
+
+	type pos struct{ x, y int }
+	queue := []pos{{start.x, start.y}}
+	visited := make(map[pos]pos)
+	visited[pos{start.x, start.y}] = pos{start.x, start.y}
+
+	dirs := []pos{{0, -1}, {0, 1}, {-1, 0}, {1, 0}}
+	found := false
+
+	for len(queue) > 0 && !found {
+		curr := queue[0]
+		queue = queue[1:]
+
+		for _, d := range dirs {
+			next := pos{curr.x + d.x, curr.y + d.y}
+			if next.x < 0 || next.x >= width || next.y < 0 || next.y >= height {
+				continue
+			}
+			if grid[next.y][next.x] != ' ' && grid[next.y][next.x] != 'E' {
+				continue
+			}
+			if _, ok := visited[next]; ok {
+				continue
+			}
+
+			visited[next] = curr
+			queue = append(queue, next)
+
+			if next.x == end.x && next.y == end.y {
+				found = true
+				break
+			}
+		}
+	}
+
+	curr := pos{end.x, end.y}
+	prev := visited[curr]
+	for curr != prev {
+		dx := curr.x - prev.x
+		dy := curr.y - prev.y
+
+		var key ebiten.Key
+		switch {
+		case dx == 1:
+			key = ebiten.KeyRight
+		case dx == -1:
+			key = ebiten.KeyLeft
+		case dy == 1:
+			key = ebiten.KeyDown
+		case dy == -1:
+			key = ebiten.KeyUp
+		}
+		path = append([]ebiten.Key{key}, path...)
+
+		curr = prev
+		prev = visited[curr]
+	}
+
+	logrus.Infof("path: %v", path)
+}
+
+type MazeSolver struct {
+	nextMove     int
+	Active       bool
+	ReadyForNext bool
+}
+
+func (m *MazeSolver) NextMove() (ebiten.Key, bool) {
+	if m.nextMove >= len(path) {
+		return ebiten.Key(0), false
+	}
+	key := path[m.nextMove]
+	m.nextMove++
+	return key, true
 }

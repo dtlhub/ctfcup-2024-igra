@@ -957,7 +957,6 @@ func (e *Engine) Update(inp *input.Input) error {
 
 		if inp.IsKeyNewlyPressed(ebiten.KeyR) {
 			logrus.Warn("Restarting arcade game")
-			e.MazeSolver.Reset()
 			if err := e.activeArcade.Game.Stop(); err != nil {
 				return fmt.Errorf("stopping arcade game: %w", err)
 			}
@@ -979,18 +978,12 @@ func (e *Engine) Update(inp *input.Input) error {
 		}
 
 		tps := 5
-		if cheats.Enabled {
-			tps = 60
-		}
-
 		if e.Tick%tps != 0 {
 			return nil
 		}
 
-		if game.MazeSolverActive {
-			e.MazeSolver.FeedState(state)
-		}
 		pressedKeys := inp.PressedKeys()
+		e.MazeSolver.ReadyForNext = true
 
 		if err := e.activeArcade.Game.Feed(pressedKeys); err != nil {
 			return fmt.Errorf("feeding arcade game: %w", err)

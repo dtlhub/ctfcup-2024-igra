@@ -32,12 +32,9 @@ func (e *Engine) PreprocessKeys(inp *input.Input) {
 	e.HandlePauseMove(inp)
 	e.HandlePauseSkip(inp)
 	e.HandleClipboardFeed(inp)
+	e.HandleMazeSolver(inp)
 
 	e.MapKeys(inp, keymap)
-
-	if game.MazeSolverActive {
-		// inp.AddKeyPressed(e.MazeSolver.NextMove())
-	}
 
 	// Keys for custom client-side actions
 	e.HandleFreeCamKeys(inp)
@@ -200,7 +197,7 @@ func (e *Engine) HandleClipboardFeed(inp *input.Input) {
 			default:
 				k = ebiten.Key(0)
 				if err := k.UnmarshalText([]byte{b}); err != nil {
-					logrus.Warn("can't unmarshal key: %s", err.Error())
+					logrus.Warnf("can't unmarshal key: %s", err.Error())
 					continue
 				}
 			}
@@ -218,5 +215,23 @@ func (e *Engine) HandleClipboardFeed(inp *input.Input) {
 	if len(e.ClipboardFeed.Keys) > 0 {
 		inp.AddKeyNewlyPressed(e.ClipboardFeed.Keys[0])
 		e.ClipboardFeed.Keys = e.ClipboardFeed.Keys[1:]
+	}
+}
+
+func (e *Engine) HandleMazeSolver(inp *input.Input) {
+	if !game.MazeSolverActive {
+		return
+	}
+
+	if e.MazeSolver.Active && e.MazeSolver.ReadyForNext {
+		key, ok := e.MazeSolver.NextMove()
+		if ok {
+			inp.AddKeyPressed(key)
+		}
+		e.MazeSolver.ReadyForNext = false
+	}
+
+	if !e.MazeSolver.Active && inp.IsKeyNewlyPressed(ebiten.KeyB) {
+		e.MazeSolver.Active = true
 	}
 }
