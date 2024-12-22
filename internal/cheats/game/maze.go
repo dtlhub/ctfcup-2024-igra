@@ -5,9 +5,8 @@ import (
 
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/arcade"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/sirupsen/logrus"
 )
-
-const MaxMoves = 20
 
 var MazeSolverActive = false
 
@@ -42,6 +41,7 @@ func (s *MazeSolver) NextMove() ebiten.Key {
 	if s.prohibitedMove != nil && moves[s.move] == *s.prohibitedMove {
 		s.move = (s.move + 1) % len(moves)
 	}
+	logrus.Infof("Next move: %s", moves[s.move])
 	return moves[s.move]
 }
 
