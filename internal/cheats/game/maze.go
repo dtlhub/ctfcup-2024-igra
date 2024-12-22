@@ -5,6 +5,7 @@ import (
 
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/arcade"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/sirupsen/logrus"
 )
 
 var MazeSolverActive = false
@@ -50,6 +51,8 @@ func (s *MazeSolver) Reset() {
 }
 
 func (s *MazeSolver) FeedState(state *arcade.State) {
+	x, y := GetPlayerLocation(state)
+	logrus.Infof("Player location: %v", x, y)
 	if s.lastState != nil && !ScreensEqual(s.lastState, state) {
 		opposite := opposite[moves[s.move]]
 		s.prohibitedMove = &opposite

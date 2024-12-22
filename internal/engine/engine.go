@@ -968,9 +968,6 @@ func (e *Engine) Update(inp *input.Input) error {
 		}
 
 		state := e.activeArcade.Game.State()
-		if game.MazeSolverActive {
-			e.MazeSolver.FeedState(state)
-		}
 
 		if state.Result == arcade.ResultWon && e.activeArcade.LinkedItem != nil {
 			e.activeArcade.LinkedItem.MoveTo(e.Player.Origin)
@@ -990,6 +987,9 @@ func (e *Engine) Update(inp *input.Input) error {
 			return nil
 		}
 
+		if game.MazeSolverActive {
+			e.MazeSolver.FeedState(state)
+		}
 		pressedKeys := inp.PressedKeys()
 
 		if err := e.activeArcade.Game.Feed(pressedKeys); err != nil {
