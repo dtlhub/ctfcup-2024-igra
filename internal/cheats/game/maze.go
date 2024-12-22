@@ -32,7 +32,7 @@ func (s *MazeSolver) NextMove() ebiten.Key {
 		s.lastMoveCount = 0
 		s.lastMove = (s.lastMove + 1) % len(moves)
 	}
-	s.lastMove += 1
+	s.lastMoveCount += 1
 	return moves[s.lastMove]
 }
 
