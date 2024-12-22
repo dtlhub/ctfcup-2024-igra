@@ -3,7 +3,6 @@ package engine
 import (
 	"strings"
 
-	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/cheats/game"
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/cheats/tps"
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/geometry"
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/input"
@@ -32,7 +31,6 @@ func (e *Engine) PreprocessKeys(inp *input.Input) {
 	e.HandlePauseMove(inp)
 	e.HandlePauseSkip(inp)
 	e.HandleClipboardFeed(inp)
-	e.HandleMazeSolver(inp)
 
 	e.MapKeys(inp, keymap)
 
@@ -215,20 +213,5 @@ func (e *Engine) HandleClipboardFeed(inp *input.Input) {
 	if len(e.ClipboardFeed.Keys) > 0 {
 		inp.AddKeyNewlyPressed(e.ClipboardFeed.Keys[0])
 		e.ClipboardFeed.Keys = e.ClipboardFeed.Keys[1:]
-	}
-}
-
-func (e *Engine) HandleMazeSolver(inp *input.Input) {
-	if !game.MazeSolverActive {
-		return
-	}
-
-	logrus.Infof("preprocessing keys: %v, %v", e.MazeSolver.Active, e.MazeSolver.ReadyForNext)
-	if e.MazeSolver.Active && e.MazeSolver.ReadyForNext {
-		key, ok := e.MazeSolver.NextMove()
-		if ok {
-			inp.AddKeyPressed(key)
-		}
-		e.MazeSolver.ReadyForNext = false
 	}
 }
