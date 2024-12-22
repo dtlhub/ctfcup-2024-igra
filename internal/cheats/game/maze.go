@@ -178,5 +178,6 @@ func (m *MazeSolver) NextMove() (ebiten.Key, bool) {
 	}
 	key := path[m.nextMove]
 	m.nextMove++
+	logrus.Infof("next move: %v", key)
 	return key, true
 }
