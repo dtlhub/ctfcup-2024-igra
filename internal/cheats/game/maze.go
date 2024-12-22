@@ -39,6 +39,7 @@ type MazeSolver struct {
 func (s *MazeSolver) NextMove() ebiten.Key {
 	s.move = (s.move + 1) % len(moves)
 	if s.prohibitedMove != nil && moves[s.move] == *s.prohibitedMove {
+		logrus.Infof("Prohibited move: %s", moves[s.move])
 		s.move = (s.move + 1) % len(moves)
 	}
 	logrus.Infof("Next move: %s", moves[s.move])
