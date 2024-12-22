@@ -31,7 +31,7 @@ func GetPlayerLocation(s *arcade.State) (int, int) {
 	for i := 0; i < len(s.Screen); i++ {
 		for j := 0; j < len(s.Screen[i]); j++ {
 			r, g, b, a := s.Screen[i][j].RGBA()
-			if r == 0 && g == 65535 && b == 0 && a == 65535 {
+			if r == 65535 && g == 0 && b == 0 && a == 65535 {
 				return i, j
 			}
 		}
