@@ -47,7 +47,7 @@ func (s *MazeSolver) NextMove() ebiten.Key {
 }
 
 func (s *MazeSolver) FeedState(state *arcade.State) {
-	if s.lastState != nil && ScreensEqual(s.lastState, state) {
+	if s.lastState != nil && !ScreensEqual(s.lastState, state) {
 		opposite := opposite[moves[s.move]]
 		s.prohibitedMove = &opposite
 	} else {
