@@ -52,7 +52,7 @@ func (s *MazeSolver) Reset() {
 
 func (s *MazeSolver) FeedState(state *arcade.State) {
 	x, y := GetPlayerLocation(state)
-	logrus.Infof("Player location: %v", x, y)
+	logrus.Infof("Player location: %v, %v", x, y)
 	if s.lastState != nil && !ScreensEqual(s.lastState, state) {
 		opposite := opposite[moves[s.move]]
 		s.prohibitedMove = &opposite
