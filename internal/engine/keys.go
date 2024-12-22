@@ -36,7 +36,7 @@ func (e *Engine) PreprocessKeys(inp *input.Input) {
 	e.MapKeys(inp, keymap)
 
 	if game.MazeSolverActive {
-		inp.AddKeyPressed(e.MazeSolver.NextMove())
+		// inp.AddKeyPressed(e.MazeSolver.NextMove())
 	}
 
 	// Keys for custom client-side actions
