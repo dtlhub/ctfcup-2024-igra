@@ -184,7 +184,14 @@ func New(config Config, resourceBundle *resources.Bundle, dialogProvider dialog.
 				)
 
 				if collisions {
+					if os.Getenv("VISIBLE_COLLISIONS") != "" {
+						spriteRect := dt.Tileset.GetTileRect(1)
+						tilesImage := resourceBundle.GetTile(dt.Tileset.Image.Source)
+						tileImage := tilesImage.SubImage(spriteRect).(*ebiten.Image)
+						tile.StaticImage = tileImage
+					}
 					mapTiles = append(mapTiles, tile)
+
 				} else {
 					backgroundTiles = append(backgroundTiles, &tiles.BackgroundImage{StaticTile: *tile})
 				}
