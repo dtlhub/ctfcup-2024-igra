@@ -28,6 +28,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/lafriks/go-tiled"
 	"github.com/samber/lo"
+	"github.com/sirupsen/logrus"
 	"github.com/vmihailenco/msgpack/v5"
 
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/arcade"
@@ -955,6 +956,7 @@ func (e *Engine) Update(inp *input.Input) error {
 		}
 
 		if inp.IsKeyNewlyPressed(ebiten.KeyR) {
+			logrus.Warn("Restarting arcade game")
 			if err := e.activeArcade.Game.Stop(); err != nil {
 				return fmt.Errorf("stopping arcade game: %w", err)
 			}
