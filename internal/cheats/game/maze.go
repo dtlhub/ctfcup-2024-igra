@@ -5,15 +5,25 @@ import (
 
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/arcade"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/sirupsen/logrus"
 )
 
 var MazeSolverActive = false
+
+const size = 200
 
 func init() {
 	value, ok := os.LookupEnv("MAZE_SOLVER")
 	MazeSolverActive = ok && value != "0"
 }
+
+type cell int
+
+const (
+	unknown cell = iota
+	empty   cell = iota
+	wall
+	finish
+)
 
 var (
 	moves = []ebiten.Key{
@@ -30,10 +40,17 @@ var (
 	}
 )
 
+type point struct {
+	x, y int
+}
+
 type MazeSolver struct {
 	move           int
 	prohibitedMove *ebiten.Key
 	lastState      *arcade.State
+	playerLocation point
+	movedToCell    point
+	maze           [size][size]int
 }
 
 func (s *MazeSolver) NextMove() ebiten.Key {
@@ -52,12 +69,19 @@ func (s *MazeSolver) Reset() {
 
 func (s *MazeSolver) FeedState(state *arcade.State) {
 	x, y := GetPlayerLocation(state)
-	logrus.Infof("Player location: %v, %v", x, y)
-	if s.lastState != nil && !ScreensEqual(s.lastState, state) {
-		opposite := opposite[moves[s.move]]
-		s.prohibitedMove = &opposite
-	} else {
-		s.prohibitedMove = nil
+	if s.playerLocation.x != x || s.playerLocation.y != y {
+		s.playerLocation = point{x, y}
 	}
-	s.lastState = state
+}
+
+func GetPlayerLocation(s *arcade.State) (int, int) {
+	for i := 0; i < len(s.Screen); i++ {
+		for j := 0; j < len(s.Screen[i]); j++ {
+			r, g, b, a := s.Screen[i][j].RGBA()
+			if r == 65535 && g == 0 && b == 0 && a == 65535 {
+				return i, j
+			}
+		}
+	}
+	return -1, -1
 }

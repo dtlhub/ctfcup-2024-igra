@@ -200,8 +200,8 @@ func (e *Engine) HandleClipboardFeed(inp *input.Input) {
 			default:
 				k = ebiten.Key(0)
 				if err := k.UnmarshalText([]byte{b}); err != nil {
-					logrus.Errorf("can't unmarshal key: %s", err.Error())
-					return
+					logrus.Warn("can't unmarshal key: %s", err.Error())
+					continue
 				}
 			}
 			keys = append(keys, k)
