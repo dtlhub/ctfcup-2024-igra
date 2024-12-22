@@ -54,6 +54,7 @@ func (s *MazeSolver) Reset() {
 
 func (s *MazeSolver) FeedState(state *arcade.State) {
 	if s.lastState != nil && !ScreensEqual(s.lastState, state) {
+		logrus.Infof("Screens are not equal, prohibited move: %s", moves[s.move])
 		opposite := opposite[moves[s.move]]
 		s.prohibitedMove = &opposite
 	} else {
