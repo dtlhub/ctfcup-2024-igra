@@ -298,6 +298,19 @@ func New(config Config, resourceBundle *resources.Bundle, dialogProvider dialog.
 					o.Width,
 					o.Height,
 				))
+			case "moving_spike":
+				spikes = append(spikes, damage.NewMovingSpike(
+					geometry.Point{
+						X: o.X,
+						Y: o.Y,
+					},
+					o.Width,
+					o.Height,
+					resourceBundle.GetDirectionalSprite("spike", o.Properties.GetString("direction")),
+					physics.ParsePath(o.Properties.GetString("path")),
+					o.Properties.GetInt("distance"),
+					o.Properties.GetInt("speed"),
+				))
 			case "platform":
 				sprite := lo.
 					If(strings.HasPrefix(o.Name, "boss"), resources.SpritePlatformWide).
@@ -341,18 +354,33 @@ func New(config Config, resourceBundle *resources.Bundle, dialogProvider dialog.
 			case "boss":
 				img := resourceBundle.GetSprite(resources.SpriteType(o.Properties.GetString("sprite")))
 				bulletImg := resourceBundle.GetSprite(resources.SpriteBullet)
-				bossObj = boss.NewV1(
-					object.NewRendered(
-						geometry.Point{
-							X: o.X,
-							Y: o.Y,
-						},
-						img,
-						o.Width,
-						o.Height,
-					),
-					bulletImg,
-				)
+				if o.Name == "v2" {
+					bossObj = boss.NewV2(
+						object.NewRendered(
+							geometry.Point{
+								X: o.X,
+								Y: o.Y,
+							},
+							img,
+							o.Width,
+							o.Height,
+						),
+						bulletImg,
+					)
+				} else {
+					bossObj = boss.NewV1(
+						object.NewRendered(
+							geometry.Point{
+								X: o.X,
+								Y: o.Y,
+							},
+							img,
+							o.Width,
+							o.Height,
+						),
+						bulletImg,
+					)
+				}
 
 				bossItemName = o.Properties.GetString("item")
 			case "slots":
@@ -397,6 +425,10 @@ func New(config Config, resourceBundle *resources.Bundle, dialogProvider dialog.
 			return i.Name == bossItemName
 		})
 		bossPortal = portalsMap["boss-exit"]
+	}
+
+	if b, ok := bossObj.(*boss.V2); ok {
+		b.SetPlatforms(bossPlatforms)
 	}
 
 	for _, n := range npcs {

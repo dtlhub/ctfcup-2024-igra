@@ -7,7 +7,7 @@ if [ -z "$1" ]; then
 	exit 1
 fi
 
-LEVEL="level-2"
+LEVEL="level-3"
 
 ADDRESS="localhost:8085"
 AUTH_TOKEN="dtl:12345"

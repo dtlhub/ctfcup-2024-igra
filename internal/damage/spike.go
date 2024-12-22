@@ -24,3 +24,15 @@ func NewSpike(origin geometry.Point, img *ebiten.Image, width, height float64) *
 		Damageable:   NewDamageable(damage),
 	}
 }
+
+func NewMovingSpike(origin geometry.Point, width, height float64, image *ebiten.Image, path physics.MovementPath, distance, speed int) *Spike {
+	damage := 100
+	if cheats.Enabled {
+		damage = 0
+	}
+
+	return &Spike{
+		MovingObject: physics.NewMovingObject(origin, width, height, image, path, distance, speed),
+		Damageable:   NewDamageable(damage),
+	}
+}
