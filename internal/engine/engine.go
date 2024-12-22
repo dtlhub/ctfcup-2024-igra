@@ -22,6 +22,7 @@ import (
 
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/boss"
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/cheats"
+	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/cheats/game"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
@@ -105,6 +106,7 @@ type Engine struct {
 	TempPause     cheats.TempPause   `json:"-" msgpack:"-"`
 	JumpTempPause cheats.TempPause   `json:"-" msgpack:"-"`
 	ClipboardFeed ClipboardFeed      `json:"-" msgpack:"-"`
+	MazeSolver    game.MazeSolver    `json:"-" msgpack:"-"`
 
 	FreeCam *FreeCam `json:"-" msgpack:"-"`
 
@@ -974,7 +976,13 @@ func (e *Engine) Update(inp *input.Input) error {
 		if e.Tick%5 != 0 {
 			return nil
 		}
-		if err := e.activeArcade.Game.Feed(inp.PressedKeys()); err != nil {
+
+		pressedKeys := inp.PressedKeys()
+		if os.Getenv("MAZE_SOLVER") == "1" {
+			pressedKeys = []ebiten.Key{e.MazeSolver.NextMove()}
+		}
+
+		if err := e.activeArcade.Game.Feed(pressedKeys); err != nil {
 			return fmt.Errorf("feeding arcade game: %w", err)
 		}
 		return nil
