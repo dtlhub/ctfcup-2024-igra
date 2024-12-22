@@ -46,6 +46,12 @@ func (s *MazeSolver) NextMove() ebiten.Key {
 	return moves[s.move]
 }
 
+func (s *MazeSolver) Reset() {
+	s.move = 0
+	s.prohibitedMove = nil
+	s.lastState = nil
+}
+
 func (s *MazeSolver) FeedState(state *arcade.State) {
 	if s.lastState != nil && !ScreensEqual(s.lastState, state) {
 		opposite := opposite[moves[s.move]]
