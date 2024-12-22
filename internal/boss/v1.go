@@ -3,6 +3,7 @@ package boss
 import (
 	"math/rand/v2"
 
+	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/cheats"
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/damage"
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/geometry"
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/object"
@@ -23,6 +24,9 @@ type V1 struct {
 	*object.Rendered `msgpack:"object"`
 
 	BulletImg *ebiten.Image
+
+	outside int `msgpack:"-"`
+	inside  int `msgpack:"-"`
 
 	stage           V1Stage        `msgpack:"stage"`
 	health          int            `msgpack:"health"`
@@ -71,8 +75,11 @@ func (b *V1) Tick(s *TickState) *TickResult {
 		bulletCount           = 1
 		bulletSpawnSquareSize = 50
 		bulletSpeed           = 2
-		bulletDamage          = 1
 	)
+	var bulletDamage = 1
+	if cheats.Enabled {
+		bulletDamage = 0
+	}
 
 	res := &TickResult{}
 	switch b.stage {
@@ -96,6 +103,11 @@ func (b *V1) Tick(s *TickState) *TickResult {
 
 	case V1StageDeath:
 		if (s.CurrentTick-b.startTick)%30 == 0 {
+			// logrus.WithFields(logrus.Fields{
+			// 	"outside":       b.outside,
+			// 	"inside":        b.inside,
+			// 	"outside_ratio": float64(b.outside) / (float64(b.outside) + float64(b.inside)),
+			// }).Infof("health=%d", b.health)
 			b.health -= 8
 		}
 
@@ -105,6 +117,14 @@ func (b *V1) Tick(s *TickState) *TickResult {
 		for range bulletCount * scalingFactor {
 			dx := float64(randInt(rnd, -bulletSpawnSquareSize*scalingFactor, bulletSpawnSquareSize*scalingFactor))
 			dy := float64(randInt(rnd, -bulletSpawnSquareSize*scalingFactor, bulletSpawnSquareSize*scalingFactor))
+
+			// origin := b.Origin.Add(geometry.Vector{X: dx, Y: dy})
+			// if origin.X < 1664 || origin.X > 2208 || origin.Y < 2176 || origin.Y > 2752 {
+			// 	b.outside++
+			// } else {
+			// 	b.inside++
+			// }
+
 			res.Bullets = append(res.Bullets, damage.NewBullet(
 				b.Origin.Add(geometry.Vector{X: dx, Y: dy}),
 				b.BulletImg,

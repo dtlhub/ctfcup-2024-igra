@@ -124,10 +124,6 @@ func (e *Engine) HandlePauseSkip(inp *input.Input) {
 }
 
 func (e *Engine) HandleTPS(inp *input.Input) {
-	if !e.FreeRoamMode() {
-		return
-	}
-
 	if inp.IsKeyNewlyPressed(ebiten.KeyEqual) {
 		tps.Increment()
 	} else if inp.IsKeyNewlyPressed(ebiten.KeyMinus) {
