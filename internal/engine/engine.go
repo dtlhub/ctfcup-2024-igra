@@ -28,7 +28,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/lafriks/go-tiled"
 	"github.com/samber/lo"
-	"github.com/sirupsen/logrus"
 	"github.com/vmihailenco/msgpack/v5"
 
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/arcade"
@@ -978,11 +977,7 @@ func (e *Engine) Update(inp *input.Input) error {
 			return nil
 		}
 
-		if os.Getenv("MAZE_SOLVER") == "1" {
-			inp.AddKeyPressed(e.MazeSolver.NextMove())
-		}
 		pressedKeys := inp.PressedKeys()
-		logrus.Infof("feeding arcade game with keys: %v", pressedKeys)
 
 		if err := e.activeArcade.Game.Feed(pressedKeys); err != nil {
 			return fmt.Errorf("feeding arcade game: %w", err)
