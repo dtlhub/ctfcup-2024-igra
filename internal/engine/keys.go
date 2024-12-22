@@ -25,7 +25,6 @@ var (
 )
 
 func (e *Engine) PreprocessKeys(inp *input.Input) {
-	logrus.Infof("preprocessing keys: %v", e.Tick)
 	e.MapKeys(inp, keyaliases)
 
 	// Customly mapped keys
@@ -224,6 +223,7 @@ func (e *Engine) HandleMazeSolver(inp *input.Input) {
 		return
 	}
 
+	logrus.Infof("preprocessing keys: %v, %v", e.MazeSolver.Active, e.MazeSolver.ReadyForNext)
 	if e.MazeSolver.Active && e.MazeSolver.ReadyForNext {
 		key, ok := e.MazeSolver.NextMove()
 		if ok {
