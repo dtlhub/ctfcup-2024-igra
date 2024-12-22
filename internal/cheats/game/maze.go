@@ -86,27 +86,32 @@ func init() {
 	height := len(lines)
 	width := len(lines[0])
 	grid := make([][]rune, height)
-	var start, end struct{ x, y int }
+	var start, end struct{ y, x int }
 
 	for y := 0; y < height; y++ {
 		grid[y] = make([]rune, width)
 		for x := 0; x < width; x++ {
 			grid[y][x] = rune(lines[y][x])
 			if grid[y][x] == 'E' {
-				end.x, end.y = x, y
+				end.y, end.x = y, x
 			}
-			if y == 1 && grid[y][x] == ' ' && start.x == 0 {
-				start.x, start.y = x, y
+			if grid[y][x] == 'S' {
+				start.y, start.x = y, x
+				grid[y][x] = ' ' // Mark as empty space after finding start
 			}
 		}
 	}
 
-	type pos struct{ x, y int }
-	queue := []pos{{start.x, start.y}}
-	visited := make(map[pos]pos)
-	visited[pos{start.x, start.y}] = pos{start.x, start.y}
+	if start.x == 0 && start.y == 0 {
+		logrus.Fatal("Start position not found in maze")
+	}
 
-	dirs := []pos{{0, -1}, {0, 1}, {-1, 0}, {1, 0}}
+	type pos struct{ y, x int }
+	queue := []pos{{start.y, start.x}}
+	visited := make(map[pos]pos)
+	visited[pos{start.y, start.x}] = pos{start.y, start.x}
+
+	dirs := []pos{{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
 	found := false
 
 	for len(queue) > 0 && !found {
@@ -114,8 +119,8 @@ func init() {
 		queue = queue[1:]
 
 		for _, d := range dirs {
-			next := pos{curr.x + d.x, curr.y + d.y}
-			if next.x < 0 || next.x >= width || next.y < 0 || next.y >= height {
+			next := pos{curr.y + d.y, curr.x + d.x}
+			if next.y < 0 || next.y >= height || next.x < 0 || next.x >= width {
 				continue
 			}
 			if grid[next.y][next.x] != ' ' && grid[next.y][next.x] != 'E' {
@@ -128,14 +133,14 @@ func init() {
 			visited[next] = curr
 			queue = append(queue, next)
 
-			if next.x == end.x && next.y == end.y {
+			if next.y == end.y && next.x == end.x {
 				found = true
 				break
 			}
 		}
 	}
 
-	curr := pos{end.x, end.y}
+	curr := pos{end.y, end.x}
 	prev := visited[curr]
 	for curr != prev {
 		dx := curr.x - prev.x
