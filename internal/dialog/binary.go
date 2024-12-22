@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
-
-	"github.com/sirupsen/logrus"
 )
 
 func NewBinary(binaryPath, greet, target string, hex bool) Dialog {
@@ -28,8 +26,6 @@ func (d *BinaryDialog) Greeting() {
 
 func (d *BinaryDialog) getBinaryOutput(input string) (string, error) {
 	cmd := exec.Command(d.binaryPath)
-
-	logrus.Infof("input: %v", input)
 
 	if d.hex {
 		inputBytes, err := hex.DecodeString(input)

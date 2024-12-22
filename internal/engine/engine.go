@@ -921,6 +921,12 @@ func (e *Engine) Draw(screen *ebiten.Image, opts ...DrawOptionsFunc) {
 			txt := fmt.Sprintf("Rewinding: %d/%d", drawOpts.Rewind.CurrentFrame, drawOpts.Rewind.TotalFrames)
 			lines = append(lines, Line{Text: txt, Color: color.RGBA{R: 255, G: 255, B: 0, A: 255}})
 		}
+		if e.Boss != nil {
+			lines = append(lines, Line{
+				Text:  fmt.Sprintf("Boss HP: %d/%d", e.Boss.Health().Health, e.Boss.Health().MaxHealth),
+				Color: color.RGBA{R: 255, G: 255, B: 0, A: 255},
+			})
+		}
 
 		if e.FreeCam.Enabled {
 			lines = append(lines, Line{
