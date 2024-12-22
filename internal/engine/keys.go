@@ -1,9 +1,9 @@
 package engine
 
 import (
-	"os"
 	"strings"
 
+	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/cheats/game"
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/cheats/tps"
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/geometry"
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/input"
@@ -35,7 +35,7 @@ func (e *Engine) PreprocessKeys(inp *input.Input) {
 
 	e.MapKeys(inp, keymap)
 
-	if os.Getenv("MAZE_SOLVER") == "1" {
+	if game.MazeSolverActive {
 		inp.AddKeyPressed(e.MazeSolver.NextMove())
 	}
 

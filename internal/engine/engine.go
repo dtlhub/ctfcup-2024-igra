@@ -964,11 +964,16 @@ func (e *Engine) Update(inp *input.Input) error {
 			return nil
 		}
 
-		if result := e.activeArcade.Game.State().Result; result == arcade.ResultWon && e.activeArcade.LinkedItem != nil {
+		state := e.activeArcade.Game.State()
+		if game.MazeSolverActive {
+			e.MazeSolver.FeedState(state)
+		}
+
+		if state.Result == arcade.ResultWon && e.activeArcade.LinkedItem != nil {
 			e.activeArcade.LinkedItem.MoveTo(e.Player.Origin)
 			e.activeArcade.LinkedItem = nil
 			return nil
-		} else if result != arcade.ResultUnknown {
+		} else if state.Result != arcade.ResultUnknown {
 			// No need to feed the game if the result is known.
 			return nil
 		}

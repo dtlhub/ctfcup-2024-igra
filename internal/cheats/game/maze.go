@@ -1,12 +1,20 @@
 package game
 
 import (
+	"os"
+
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/arcade"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/sirupsen/logrus"
 )
 
 const MaxMoves = 20
+
+var MazeSolverActive = false
+
+func init() {
+	value, ok := os.LookupEnv("MAZE_SOLVER")
+	MazeSolverActive = ok && value != "0"
+}
 
 var (
 	moves = []ebiten.Key{
@@ -24,19 +32,25 @@ var (
 )
 
 type MazeSolver struct {
-	lastMove      int
-	lastMoveCount int
+	move           int
+	prohibitedMove *ebiten.Key
+	lastState      *arcade.State
 }
 
 func (s *MazeSolver) NextMove() ebiten.Key {
-	if s.lastMoveCount == MaxMoves {
-		s.lastMoveCount = 0
-		s.lastMove = (s.lastMove + 1) % len(moves)
+	s.move = (s.move + 1) % len(moves)
+	if s.prohibitedMove != nil && moves[s.move] == *s.prohibitedMove {
+		s.move = (s.move + 1) % len(moves)
 	}
-	s.lastMoveCount += 1
-	logrus.Infof("maze solver move: %d, count: %d", s.lastMove, s.lastMoveCount)
-	return moves[s.lastMove]
+	return moves[s.move]
 }
 
-func (s *MazeSolver) FeedResult(arcade.Result) {
+func (s *MazeSolver) FeedState(state *arcade.State) {
+	if s.lastState != nil && ScreensEqual(s.lastState, state) {
+		opposite := opposite[moves[s.move]]
+		s.prohibitedMove = &opposite
+	} else {
+		s.prohibitedMove = nil
+	}
+	s.lastState = state
 }
