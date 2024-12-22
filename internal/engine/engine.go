@@ -947,6 +947,8 @@ func (e *Engine) Update(inp *input.Input) error {
 	}
 
 	if e.activeArcade != nil {
+		e.MazeSolver.Active = true
+
 		if inp.IsKeyNewlyPressed(ebiten.KeyEscape) {
 			if err := e.activeArcade.Game.Stop(); err != nil {
 				return fmt.Errorf("stopping arcade game: %w", err)

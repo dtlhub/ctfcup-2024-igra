@@ -230,8 +230,4 @@ func (e *Engine) HandleMazeSolver(inp *input.Input) {
 		}
 		e.MazeSolver.ReadyForNext = false
 	}
-
-	if !e.MazeSolver.Active && inp.IsKeyNewlyPressed(ebiten.KeyB) {
-		e.MazeSolver.Active = true
-	}
 }
