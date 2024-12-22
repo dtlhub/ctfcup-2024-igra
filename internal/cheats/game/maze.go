@@ -5,7 +5,6 @@ import (
 
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/arcade"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/sirupsen/logrus"
 )
 
 var MazeSolverActive = false
@@ -39,10 +38,8 @@ type MazeSolver struct {
 func (s *MazeSolver) NextMove() ebiten.Key {
 	s.move = (s.move + 1) % len(moves)
 	if s.prohibitedMove != nil && moves[s.move] == *s.prohibitedMove {
-		logrus.Infof("Prohibited move: %s", moves[s.move])
 		s.move = (s.move + 1) % len(moves)
 	}
-	logrus.Infof("Next move: %s", moves[s.move])
 	return moves[s.move]
 }
 
@@ -54,7 +51,6 @@ func (s *MazeSolver) Reset() {
 
 func (s *MazeSolver) FeedState(state *arcade.State) {
 	if s.lastState != nil && !ScreensEqual(s.lastState, state) {
-		logrus.Infof("Screens are not equal, prohibited move: %s", moves[s.move])
 		opposite := opposite[moves[s.move]]
 		s.prohibitedMove = &opposite
 	} else {
