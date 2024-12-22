@@ -3,6 +3,7 @@ package game
 import (
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/arcade"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/sirupsen/logrus"
 )
 
 const MaxMoves = 100
@@ -33,6 +34,7 @@ func (s *MazeSolver) NextMove() ebiten.Key {
 		s.lastMove = (s.lastMove + 1) % len(moves)
 	}
 	s.lastMoveCount += 1
+	logrus.Infof("maze solver move: %d, count: %d", s.lastMove, s.lastMoveCount)
 	return moves[s.lastMove]
 }
 
