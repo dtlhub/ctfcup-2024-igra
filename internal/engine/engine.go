@@ -23,6 +23,7 @@ import (
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/boss"
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/casino"
 	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/cheats"
+	"github.com/c4t-but-s4d/ctfcup-2024-igra/internal/cheats/game"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
@@ -108,6 +109,8 @@ type Engine struct {
 	TempPause     cheats.TempPause   `json:"-" msgpack:"-"`
 	JumpTempPause cheats.TempPause   `json:"-" msgpack:"-"`
 	ClipboardFeed ClipboardFeed      `json:"-" msgpack:"-"`
+
+	ArcadeSolver game.SolverState `json:"-" msgpack:"-"`
 
 	FreeCam *FreeCam `json:"-" msgpack:"-"`
 
@@ -467,7 +470,11 @@ func New(config Config, resourceBundle *resources.Bundle, dialogProvider dialog.
 		Slots:            slots,
 		Level:            config.Level,
 		FreeCam:          NewFreeCam(),
-		TeamName:         strings.Split(os.Getenv("AUTH_TOKEN"), ":")[0],
+		ArcadeSolver: game.SolverState{
+			Solver: game.GetSolver(),
+			Ready:  false,
+		},
+		TeamName: strings.Split(os.Getenv("AUTH_TOKEN"), ":")[0],
 		dialogControl: dialogControl{
 			maskInput: !dialogProvider.DisplayInput(),
 		},
@@ -1020,8 +1027,7 @@ func (e *Engine) Update(inp *input.Input) error {
 			return nil
 		}
 
-		tps := 5
-		if e.Tick%tps != 0 {
+		if e.Tick%5 != 0 {
 			return nil
 		}
 

@@ -90,5 +90,4 @@ At the moment, the following functionality is enabled with destructive cheats:
 
 - `MUTED` - if set to 1, the game will start up muted.
 
-
 - `VISIBLE_COLLISIONS` - set all collidable objects texture to brick.

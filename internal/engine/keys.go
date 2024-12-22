@@ -31,6 +31,7 @@ func (e *Engine) PreprocessKeys(inp *input.Input) {
 	e.HandlePauseMove(inp)
 	e.HandlePauseSkip(inp)
 	e.HandleClipboardFeed(inp)
+	e.HandleArcadeSolver(inp)
 
 	e.MapKeys(inp, keymap)
 
@@ -214,4 +215,17 @@ func (e *Engine) HandleClipboardFeed(inp *input.Input) {
 		inp.AddKeyNewlyPressed(e.ClipboardFeed.Keys[0])
 		e.ClipboardFeed.Keys = e.ClipboardFeed.Keys[1:]
 	}
+}
+
+func (e *Engine) HandleArcadeSolver(inp *input.Input) {
+	if e.ArcadeSolver.Solver == nil || e.activeArcade == nil || e.Tick%5 != 4 {
+		return
+	}
+
+	nextKey, ok := e.ArcadeSolver.NextMove(e.activeArcade.Game.State())
+	if !ok {
+		return
+	}
+	inp.AddKeyNewlyPressed(nextKey)
+	inp.AddKeyPressed(nextKey)
 }
