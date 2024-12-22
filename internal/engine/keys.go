@@ -25,6 +25,7 @@ var (
 )
 
 func (e *Engine) PreprocessKeys(inp *input.Input) {
+	logrus.Infof("preprocessing keys: %v", e.Tick)
 	e.MapKeys(inp, keyaliases)
 
 	// Customly mapped keys
