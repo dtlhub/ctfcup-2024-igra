@@ -703,6 +703,34 @@ func (e *Engine) Draw(screen *ebiten.Image, opts ...DrawOptionsFunc) {
 			base := geometry.Origin.Add(visible)
 			op := &ebiten.DrawImageOptions{}
 
+			// possiblyMoving := []any{}
+			// // for _, s := range e.Spikes {
+			// // 	possiblyMoving = append(possiblyMoving, s)
+			// // }
+			// for _, p := range e.Platforms {
+			// 	possiblyMoving = append(possiblyMoving, p)
+			// }
+
+			// for _, mov := range possiblyMoving {
+			// 	logrus.Infof("drawing moving object: %+v", mov)
+			// 	switch o := mov.(type) {
+			// 	case *physics.MovingObject:
+			// 		start, end := o.GetEnds()
+			// 		vector.StrokeLine(
+			// 			screen,
+			// 			float32(start.X-e.ActiveCamera().Rectangle().LeftX),
+			// 			float32(start.Y-e.ActiveCamera().Rectangle().BottomY),
+			// 			float32(end.X-e.ActiveCamera().Rectangle().LeftX),
+			// 			float32(end.Y-e.ActiveCamera().Rectangle().BottomY),
+			// 			2,
+			// 			color.RGBA{R: 255, G: 0, B: 0, A: 255},
+			// 			false,
+			// 		)
+			// 	default:
+			// 		// not a moving object.
+			// 	}
+			// }
+
 			switch o := c.(type) {
 			case *player.Player:
 				if e.Player.LooksRight {

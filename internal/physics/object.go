@@ -181,3 +181,7 @@ func (p *MovingObject) moveY() {
 
 	p.Origin.Y = next
 }
+
+func (p *MovingObject) GetEnds() (geometry.Point, geometry.Point) {
+	return p.start, p.end
+}
