@@ -61,7 +61,7 @@ func (r *Rewinder) skipFrames() {
 	}
 
 	moves := r.loadedRewind.Moves[r.lastFrame]
-	for (r.engine.Paused || r.skipEmpty) && r.lastFrame < len(r.loadedRewind.Moves)-1 &&
+	for r.skipEmpty && r.lastFrame < len(r.loadedRewind.Moves)-1 &&
 		(r.engine.IsStill() && moves.KeysPressed == nil && moves.NewKeysPressed == nil) {
 		r.lastFrame++
 		moves = r.loadedRewind.Moves[r.lastFrame]
