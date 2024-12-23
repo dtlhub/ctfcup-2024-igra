@@ -1,6 +1,8 @@
 # ctfcup-2024-igra
 
-Source code of the CTF game developed for the [CTFCUP 2024](https://ctfcup.ru/) finals.
+Cheats, tweaks to the engine and other tools, developed by [dtl](https://github.com/dtlhub) team in preparation for and during [CTFCUP 2024](https://ctfcup.ru/) finals.
+
+![Demo of the game with cheats enabled](./screenshots/parkour.png)
 
 ## Cheats
 
