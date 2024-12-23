@@ -1426,10 +1426,6 @@ func (e *Engine) ActiveCamera() *object.Base {
 	return e.Camera.Base
 }
 
-func (e *Engine) IsStill() bool {
-	return e.Paused
-}
-
 func (e *Engine) CheckSlotsClose() *casino.SlotMachine {
 	for s := range Collide(e.Player.Rectangle(), e.Slots) {
 		if s.LastTriggered+s.Cooldown > e.Tick {

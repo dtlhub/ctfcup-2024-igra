@@ -12,7 +12,7 @@ import (
 type Rewinder struct {
 	loadedRewind *Rewind
 	lastFrame    int
-	skipEmpty    bool
+	skipPaused   bool
 	finished     bool
 	engine       *engine.Engine
 }
@@ -26,8 +26,8 @@ func (r *Rewinder) Initialize(engine *engine.Engine) error {
 		}
 	}
 
-	skipEmpty, ok := os.LookupEnv("REWIND_SKIP_EMPTY")
-	r.skipEmpty = ok && skipEmpty != "0"
+	skipPaused, ok := os.LookupEnv("REWIND_SKIP_PAUSED")
+	r.skipPaused = ok && skipPaused != "0"
 
 	tps.SetFromEnv("REWIND_TPS", 6_000)
 
@@ -56,13 +56,13 @@ func (r *Rewinder) NextFrame() (keys *gameserverpb.ClientEvent_KeysPressed, just
 }
 
 func (r *Rewinder) skipFrames() {
-	if r.lastFrame >= len(r.loadedRewind.Moves) {
+	if r.lastFrame >= len(r.loadedRewind.Moves) || !r.skipPaused {
 		return
 	}
 
 	moves := r.loadedRewind.Moves[r.lastFrame]
-	for r.skipEmpty && r.lastFrame < len(r.loadedRewind.Moves)-1 &&
-		(r.engine.IsStill() && moves.KeysPressed == nil && moves.NewKeysPressed == nil) {
+	for r.lastFrame < len(r.loadedRewind.Moves)-1 && r.engine.Paused &&
+		moves.KeysPressed == nil && moves.NewKeysPressed == nil {
 		r.lastFrame++
 		moves = r.loadedRewind.Moves[r.lastFrame]
 	}

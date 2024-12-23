@@ -42,7 +42,7 @@ Allows to save game's state and replay it later, basically checkpoint system.
 
 - `REWIND_TPS` - set TPS for rewind replay, e.g. `REWIND_TPS=100`. If not set, defaults to 6000 TPS (x100 regular game speed).
 
-- `REWIND_SKIP_EMPTY` - if set to non-empty value, empty frames will be skipped. Frame is considered empty if the player is not moving and no keys are pressed. Note that movement of other entities in the world is not considered, so you shouldn't skip frames if that is important.
+- `REWIND_SKIP_PAUSED` - if set to non-empty value, paused frames, in which no inputs are done, will be skipped.
 
 #### Hotkeys:
 
