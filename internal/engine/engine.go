@@ -1427,7 +1427,7 @@ func (e *Engine) ActiveCamera() *object.Base {
 }
 
 func (e *Engine) IsStill() bool {
-	return e.Player.Speed.X == 0 && e.Player.OnGround() == nil || e.Paused
+	return e.Paused
 }
 
 func (e *Engine) CheckSlotsClose() *casino.SlotMachine {
