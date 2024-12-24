@@ -1,6 +1,6 @@
 # ctfcup-2024-igra
 
-Cheats, tweaks to the engine and other tools, developed by [dtl](https://github.com/dtlhub) team in preparation for and during [CTFCUP 2024](https://ctfcup.ru/) finals.
+Cheats, tweaks to the engine and other tools, developed by [dtl](https://github.com/dtlhub) team in preparation for and during [CTFCUP 2024 finals](https://github.com/C4T-BuT-S4D/ctfcup-2024-igra).
 
 ![Demo of the game with cheats enabled](./screenshots/parkour.png)
 
